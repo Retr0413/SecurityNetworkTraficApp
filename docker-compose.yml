@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    environment:
+      DB_USER: "user"
+      DB_PASSWORD: "password"
+      DB_HOST: "db"
+      DB_NAME: "app_db"
+      SECRET_KEY: "mysecretkey"
+    ports:
+      - "5000:5000"
+    command: ["flask", "run", "--host=0.0.0.0"]
+    volumes:
+      - ./:/app
+
+volumes:
+  db_data:
