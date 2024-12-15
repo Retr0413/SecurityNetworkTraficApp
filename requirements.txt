@@ -2,7 +2,7 @@ Flask
 Flask-SQLAlchemy
 PyMySQL
 requests
-chart.js
 torch
 pandas
 numpy
+scapy

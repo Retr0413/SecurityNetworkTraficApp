@@ -1,15 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>All Logs</h2>
-<table border="1">
-<tr><th>ID</th><th>Label</th><th>Timestamp</th><th>Detail</th></tr>
-{% for log in logs %}
-<tr>
-<td>{{ log.id }}</td>
-<td>{{ log.label }}</td>
-<td>{{ log.timestamp }}</td>
-<td>{{ log.detail }}</td>
-</tr>
-{% endfor %}
-</table>
+<!-- ここに全ログ表示用コードを記述可能 -->
 {% endblock %}

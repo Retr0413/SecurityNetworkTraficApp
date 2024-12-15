@@ -1,6 +1,8 @@
 import numpy as np
 
-def preprocess_fatures(feature_dict):
-    feature_order = ["Flow Duration", "Total Fwd Packet", "Bwd Packet Length Mean"]
-    arr = [feature_dict.get(f, 0) for f in feature_order]
-    return np.array(arr, dtype=float)
+def preprocess_features(feature_dict):
+    # 例: モデルは "protocol", "packet_length", "ttl" の3特徴量を使うと仮定
+    protocol = feature_dict.get("protocol", 0)
+    packet_length = feature_dict.get("packet_length", 0)
+    ttl = feature_dict.get("ttl", 0)
+    return np.array([protocol, packet_length, ttl], dtype=float)
