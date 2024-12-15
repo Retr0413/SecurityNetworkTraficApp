@@ -5,3 +5,4 @@ requests
 torch
 pandas
 numpy
+scapy

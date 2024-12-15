@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Minimal Classification Test</h2>
-<p>POST JSON to /api/predict to get classification result.</p>
+<h2>Recent Packets</h2>
+<table border="1">
+<tr><th>ID</th><th>Time</th><th>Src IP</th><th>Dst IP</th><th>Protocol</th><th>Length</th><th>TTL</th><th>Flags</th><th>Src Port</th><th>Dst Port</th><th>Label</th></tr>
+{% for log in logs %}
+<tr>
+<td>{{ log.id }}</td>
+<td>{{ log.timestamp }}</td>
+<td>{{ log.src_ip }}</td>
+<td>{{ log.dst_ip }}</td>
+<td>{{ log.protocol }}</td>
+<td>{{ log.packet_length }}</td>
+<td>{{ log.ttl }}</td>
+<td>{{ log.flags }}</td>
+<td>{{ log.src_port }}</td>
+<td>{{ log.dst_port }}</td>
+<td>{{ log.label }}</td>
+</tr>
+{% endfor %}
+</table>
 {% endblock %}
