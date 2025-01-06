@@ -2,6 +2,7 @@ version: '3.9'
 services:
   db:
     image: mysql:8.0
+    container_name: db
     environment:
       MYSQL_DATABASE: app_db
       MYSQL_USER: user
@@ -23,8 +24,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: web
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_USER: "user"
       DB_PASSWORD: "password"
@@ -34,6 +37,27 @@ services:
     ports:
       - "5000:5000"
     command: ["flask", "run", "--host=0.0.0.0"]
+    volumes:
+      - ./:/app
+
+  capture:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: capture
+    depends_on:
+      db:
+        condition: service_healthy
+    # DB接続用環境変数を使うなら下記を指定
+    environment:
+      DB_USER: "user"
+      DB_PASSWORD: "password"
+      DB_HOST: "db"
+      DB_NAME: "app_db"
+    # captureコンテナ内でパケットキャプチャを行う
+    # ここでは docker host network を使いたい場合、いろいろ考慮が必要
+    # シンプルにcomposeネットワークで同時に動かす場合はeth0に注意
+    command: ["python3", "packet_capture.py"]
     volumes:
       - ./:/app
 

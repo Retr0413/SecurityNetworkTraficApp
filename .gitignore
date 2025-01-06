@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
+*.log
+app/model/network_traffic_model.pth
 
 # C extensions
 *.so

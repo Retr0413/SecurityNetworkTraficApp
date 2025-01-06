@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Recent Packets</h2>
+<h2>Packet Logs (recent 50)</h2>
 <table border="1">
-<tr><th>ID</th><th>Time</th><th>Src IP</th><th>Dst IP</th><th>Protocol</th><th>Length</th><th>TTL</th><th>Flags</th><th>Src Port</th><th>Dst Port</th><th>Label</th></tr>
+<tr>
+    <th>ID</th><th>Time</th><th>Src IP</th><th>Dst IP</th>
+    <th>Protocol</th><th>Length</th><th>TTL</th><th>Flags</th>
+    <th>Src Port</th><th>Dst Port</th>
+    <th>Label</th><th>Is Abnormal?</th>
+</tr>
 {% for log in logs %}
 <tr>
 <td>{{ log.id }}</td>
@@ -16,6 +21,7 @@
 <td>{{ log.src_port }}</td>
 <td>{{ log.dst_port }}</td>
 <td>{{ log.label }}</td>
+<td>{{ log.is_abnormal }}</td>
 </tr>
 {% endfor %}
 </table>
