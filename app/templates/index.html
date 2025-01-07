@@ -1,12 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Packet Logs (recent 50)</h2>
+<h2>Recent Packets (Top 50)</h2>
 <table border="1">
 <tr>
-    <th>ID</th><th>Time</th><th>Src IP</th><th>Dst IP</th>
-    <th>Protocol</th><th>Length</th><th>TTL</th><th>Flags</th>
-    <th>Src Port</th><th>Dst Port</th>
-    <th>Label</th><th>Is Abnormal?</th>
+ <th>ID</th><th>Time</th><th>Src IP</th><th>Dst IP</th>
+ <th>Protocol</th><th>PktLength</th><th>Label</th><th>is_abnormal</th>
 </tr>
 {% for log in logs %}
 <tr>
@@ -16,10 +14,6 @@
 <td>{{ log.dst_ip }}</td>
 <td>{{ log.protocol }}</td>
 <td>{{ log.packet_length }}</td>
-<td>{{ log.ttl }}</td>
-<td>{{ log.flags }}</td>
-<td>{{ log.src_port }}</td>
-<td>{{ log.dst_port }}</td>
 <td>{{ log.label }}</td>
 <td>{{ log.is_abnormal }}</td>
 </tr>

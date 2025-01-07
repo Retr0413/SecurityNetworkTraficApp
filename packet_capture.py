@@ -13,8 +13,8 @@ queue_lock = threading.Lock()
 def packet_handler(packet):
     if IP in packet:
         ip_layer = packet[IP]
-        ttl = ip_layer.ttl
         proto = ip_layer.proto
+        ttl = ip_layer.ttl
         flags = None
         src_port = None
         dst_port = None
@@ -55,42 +55,39 @@ def save_to_db():
         time.sleep(5)
 
 def classify_packets():
-    """DBに未処理のパケットに対してモデル分類を行い、結果をDBに更新"""
     model = NetworkTrafficModel("app/model/network_traffic_model.pth")
     while True:
         rows = get_unprocessed_packets()
         if rows:
-            # rows: [(id, protocol, packet_length, ttl, flags, src_port, dst_port), ...]
             ids = []
-            features_list = []
-            for row in rows:
-                pid, protocol, pkt_len, ttl, flags, s_port, d_port = row
+            feats_list = []
+            for r in rows:
+                pid, proto, pkt_len, ttl, flags, s_port, d_port = r
                 fdict = {
-                    "protocol": protocol,
+                    "protocol": proto,
                     "packet_length": pkt_len,
                     "ttl": ttl
                 }
                 feat = preprocess_features(fdict)
-                features_list.append(feat)
+                feats_list.append(feat)
                 ids.append(pid)
 
             labels = []
-            is_abnormals = []
-            for feat in features_list:
-                label = model.predict(feat)  # e.g. "Non-Tor" / "Tor" / "VPN" / "NonVPN"
-                # 例： Tor/VPNを異常(True)とし、それ以外をFalseとする
-                abnormal = (label in ["Tor", "VPN"])
+            abnormals = []
+            for feat in feats_list:
+                label = model.predict(feat)
+                # Tor or VPN => 異常とみなす
+                abnormal = label in ["Tor","VPN"]
                 labels.append(label)
-                is_abnormals.append(abnormal)
+                abnormals.append(abnormal)
 
-            update_packet_label(ids, labels, is_abnormals)
-            print(f"{len(ids)}件のパケットを分類し更新: {list(zip(ids, labels, is_abnormals))}")
-
+            update_packet_label(ids, labels, abnormals)
+            print(f"{len(ids)}件のパケットを分類→DB更新")
         time.sleep(5)
 
-def start_sniffing(interface):
-    print(f"{interface} でスニッフィング開始")
-    sniff(iface=interface, prn=packet_handler, store=False)
+def start_sniffing(iface):
+    print(f"インターフェース {iface} でスニッフィング開始")
+    sniff(iface=iface, prn=packet_handler, store=False)
 
 if __name__ == "__main__":
     init_db()
@@ -102,9 +99,9 @@ if __name__ == "__main__":
     classify_thread.start()
 
     interfaces = get_if_list()
-    print("利用可能なインターフェース:", interfaces)
+    print(f"利用可能なインターフェース: {interfaces}")
     iface = "eth0" if "eth0" in interfaces else interfaces[0]
     try:
         start_sniffing(iface)
     except KeyboardInterrupt:
-        print("停止します")
+        print("パケットキャプチャ停止")

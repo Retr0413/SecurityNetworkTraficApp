@@ -9,7 +9,7 @@ def create_app():
     app.config.from_object(Config)
     db.init_app(app)
     with app.app_context():
-        db.create_all()
+        db.create_all()   # traffic_logテーブルなどを作成
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(front_bp, url_prefix='/')
     return app

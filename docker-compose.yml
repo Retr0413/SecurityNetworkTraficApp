@@ -36,7 +36,7 @@ services:
       SECRET_KEY: "secretkey"
     ports:
       - "5000:5000"
-    command: ["flask", "run", "--host=0.0.0.0"]
+    command: ["flask","run","--host=0.0.0.0"]
     volumes:
       - ./:/app
 
@@ -44,22 +44,25 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    network_mode: "host"
     container_name: capture
     depends_on:
       db:
         condition: service_healthy
-    # DB接続用環境変数を使うなら下記を指定
     environment:
       DB_USER: "user"
       DB_PASSWORD: "password"
-      DB_HOST: "db"
+      DB_HOST: "127.0.0.1"
       DB_NAME: "app_db"
-    # captureコンテナ内でパケットキャプチャを行う
-    # ここでは docker host network を使いたい場合、いろいろ考慮が必要
-    # シンプルにcomposeネットワークで同時に動かす場合はeth0に注意
-    command: ["python3", "packet_capture.py"]
+    # コンテナ起動後にpacket_capture.pyを自動実行
+    command: ["python3","packet_capture.py"]
     volumes:
       - ./:/app
+    # ネットワークインターフェースをキャプチャするにはNET_ADMINが必要
+    cap_add:
+      - NET_ADMIN
+    # ホストネットワークが必要なら
+    # network_mode: "host"
 
 volumes:
   db_data:

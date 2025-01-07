@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Real-Time Traffic Visualization</h2>
+<canvas id="trafficChart" width="600" height="300"></canvas>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let trafficChart;
+let chartData = {
+  labels: [],
+  datasets: [{
+    label: 'Packet Length',
+    data: [],
+    backgroundColor: 'rgba(0, 123, 255, 0.5)'
+  }]
+};
+
+function initChart() {
+  const ctx = document.getElementById('trafficChart').getContext('2d');
+  trafficChart = new Chart(ctx, {
+    type: 'line',
+    data: chartData,
+    options: {
+      scales: {
+        x: { title: { display: true, text: 'Timestamp' } },
+        y: { title: { display: true, text: 'Packet Length' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// 定期的に /api/chart_data からJSONを取得し、グラフ更新
+function updateChart() {
+  fetch('/api/chart_data')
+    .then(response => response.json())
+    .then(jsonData => {
+      // jsonData: [{timestamp:'YYYY-MM-DD HH:MM:SS', packet_length:1234}, ...]
+      chartData.labels = jsonData.map(item => item.timestamp);
+      chartData.datasets[0].data = jsonData.map(item => item.packet_length);
+      trafficChart.update();
+    })
+    .catch(err => console.error('Error fetching chart data:', err));
+}
+
+window.onload = () => {
+  initChart();
+  // 3秒ごとにグラフ更新
+  setInterval(updateChart, 3000);
+};
+</script>
+{% endblock %}

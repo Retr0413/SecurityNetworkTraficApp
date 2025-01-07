@@ -20,53 +20,60 @@ def init_db():
     raise Exception("DB接続に失敗しました")
 
 def save_packets_to_db(packet_list):
+    """
+    packet_list: [{"timestamp":..., "src_ip":..., "dst_ip":..., "protocol":..., "packet_length":..., ...}, ...]
+    """
     conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
     cursor = conn.cursor()
     insert_sql = """
     INSERT INTO traffic_log
     (timestamp, src_ip, dst_ip, protocol, packet_length, ttl, flags, src_port, dst_port)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
     """
-    data_to_insert = []
+    data = []
     for p in packet_list:
-        data_to_insert.append(
-            (p["timestamp"], p["src_ip"], p["dst_ip"], p["protocol"], p["packet_length"],
-             p["ttl"], p["flags"], p["src_port"], p["dst_port"])
-        )
-    if data_to_insert:
-        cursor.executemany(insert_sql, data_to_insert)
+        data.append((
+            p.get("timestamp",""),
+            p.get("src_ip",""),
+            p.get("dst_ip",""),
+            p.get("protocol",0),
+            p.get("packet_length",0),
+            p.get("ttl",0),
+            p.get("flags",None),
+            p.get("src_port",None),
+            p.get("dst_port",None)
+        ))
+    if data:
+        cursor.executemany(insert_sql, data)
         conn.commit()
-        print(f"{len(data_to_insert)}件のパケットをDBに保存")
+        print(f"{len(data)}件のパケットをDBに保存")
     cursor.close()
     conn.close()
 
 def get_unprocessed_packets():
     conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
     cursor = conn.cursor()
-    select_sql = """
+    sql = """
     SELECT id, protocol, packet_length, ttl, flags, src_port, dst_port
     FROM traffic_log
     WHERE processed = FALSE
     """
-    cursor.execute(select_sql)
-    rows = cursor.fetchall()
+    cursor.execute(sql)
+    rows = cursor.fetchall()  # [(id,protocol,packet_length,ttl,flags,src_port,dst_port), ...]
     cursor.close()
     conn.close()
     return rows
 
 def update_packet_label(ids, labels, is_abnormals):
-    """
-    labels: 各行に対応するクラス名 (Non-Tor/NonVPN/VPN/Tor)
-    is_abnormals: True/False
-    """
     conn = pymysql.connect(host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME)
     cursor = conn.cursor()
     for packet_id, label, abnormal in zip(ids, labels, is_abnormals):
-        update_sql = """
-        UPDATE traffic_log SET label=%s, processed=TRUE, is_abnormal=%s
+        up_sql = """
+        UPDATE traffic_log
+        SET label=%s, processed=TRUE, is_abnormal=%s
         WHERE id=%s
         """
-        cursor.execute(update_sql, (label, abnormal, packet_id))
+        cursor.execute(up_sql, (label, abnormal, packet_id))
     conn.commit()
     cursor.close()
     conn.close()
