@@ -63,15 +63,17 @@ bash
 コピーする
 編集する
 docker-compose up --build
-Flask (Web) はポート 5000 にて起動。
+Flask (Web) はポート 5000 にて起動
 
-capture サービスがあればパケットキャプチャも自動実行。
+capture サービスが有効なら、自動的にパケットキャプチャも開始
 
 ✅ Web UI 確認
 text
 コピーする
 編集する
 http://localhost:5000/
+ブラウザでアクセスし、通信ログを確認
+
 ✅ ログ確認
 bash
 コピーする
@@ -88,36 +90,55 @@ bash
 コピーする
 編集する
 python offline_pcap_analysis.py /path/to/file.pcap 100
-指定 .pcap ファイルを解析。
+.pcap ファイルを読み込んで統計表示・ポートスキャン検出を実施
 
-統計表示 + ポートスキャン検知。
+DBに保存（オプション設定による）
 
-DB保存 + モデル分類も可能。
+モデルによる分類も可能（label, is_abnormal を更新）
 
 🧠 5. 学習済みモデルの仕様
 モデルファイル: app/model/network_traffic_model.pth
 
-ラベル: Non-Tor, NonVPN, VPN, Tor
+分類ラベル: Non-Tor, NonVPN, VPN, Tor
 
 異常とみなす: VPN, Tor → is_abnormal=True
 
-ロジック実装箇所: packet_capture.py, offline_pcap_analysis.py
+ロジック実装: packet_capture.py, offline_pcap_analysis.py
 
 ⚙️ 6. カスタマイズ
-🛜 ネットワークインターフェース
-packet_capture.py の iface = "eth0" を適切な名前に変更。
+🛜 ネットワークインターフェース設定
+packet_capture.py:
 
-Docker使用時: network_mode: "host" や cap_add: [NET_ADMIN] を追加。
+python
+コピーする
+編集する
+iface = "eth0"  # 必要に応じて en0, wlan0 などに変更
+docker-compose.yml:
 
-🧩 モデル構造・特徴量
-編集対象: model.py, preprocessing.py
+yaml
+コピーする
+編集する
+network_mode: "host"
+cap_add:
+  - NET_ADMIN
+🧩 モデル構造・特徴量カスタマイズ
+編集対象:
 
-🗃️ DB構成
-テーブル拡張: TrafficLog にカラム追加。
+model.py: モデル構造の定義
 
-編集対象: db_operations.py
+preprocessing.py: 入力特徴量の加工処理
 
-🖼️ フロントエンド
-ページ編集: templates/index.html
+🗃️ DB構成変更
+TrafficLog テーブルに新たなカラムを追加可能
 
-グラフ導入: Chart.js など可
+保存・更新ロジック: db_operations.py
+
+🖼️ フロントエンド拡張
+templates/index.html を編集して以下を実装可能:
+
+ページネーション
+
+ラベル別フィルタリング
+
+グラフ表示（Chart.js 等）
+
